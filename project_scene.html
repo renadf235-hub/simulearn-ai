@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>SimuLearn AI | Project Simulation</title>
+
+<style>
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    overflow: hidden;
+    font-family: Arial, sans-serif;
+    background: #101827;
+    color: white;
+}
+
+#scene {
+    position: fixed;
+    inset: 0;
+}
+
+#panel {
+    position: fixed;
+    top: 18px;
+    left: 18px;
+    width: 255px;
+    padding: 20px;
+    border-radius: 16px;
+    background: rgba(15, 25, 42, 0.92);
+    border: 1px solid #34445b;
+    z-index: 2;
+}
+
+h2 {
+    margin-top: 0;
+    font-size: 21px;
+}
+
+.label {
+    color: #aabbd0;
+    font-size: 13px;
+}
+
+.metric {
+    font-size: 25px;
+    font-weight: bold;
+    margin: 6px 0 18px;
+    color: #8fe3c0;
+}
+
+button {
+    width: 100%;
+    padding: 11px;
+    margin-top: 9px;
+    border: 0;
+    border-radius: 8px;
+    background: #3478f6;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #5a92ff;
+}
+
+#message {
+    margin-top: 14px;
+    color: #c7d6e9;
+    font-size: 13px;
+    line-height: 1.5;
+}
+
+#hint {
+    position: fixed;
+    bottom: 18px;
+    right: 18px;
+    background: rgba(15, 25, 42, 0.9);
+    border: 1px solid #34445b;
+    border-radius: 10px;
+    padding: 12px 16px;
+    color: #d5e2f2;
+    font-size: 13px;
+}
+
+@media (max-width: 600px) {
+    #panel {
+        width: 210px;
+        padding: 14px;
+    }
+
+    .metric {
+        font-size: 20px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="scene"></div>
+
+<div id="panel">
+    <h2>🏗️ Project Control</h2>
+
+    <div class="label">Project Budget</div>
+    <div class="metric" id="budget">100,000 SAR</div>
+
+    <div class="label">Project Progress</div>
+    <div class="metric" id="progress">35%</div>
+
+    <div class="label">Project Status</div>
+    <div id="status">In Progress</div>
+
+    <button onclick="addResources()">
+        Add Project Resources
+    </button>
+
+    <button onclick="resolveDelay()">
+        Resolve Project Delay
+    </button>
+
+    <button onclick="resetProject()">
+        Reset Simulation
+    </button>
+
+    <div id="message">
+        Explore the 3D project site and test your decisions.
+    </div>
+</div>
+
+<div id="hint">
+    Drag to rotate · Scroll to zoom
+</div>
+
+<script type="module">
+import * as THREE from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
+
+import { OrbitControls } from
+'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
+
+const container = document.getElementById('scene');
+
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x101827);
+
+scene.fog = new THREE.Fog(0x101827, 25, 65);
+
+const camera = new THREE.PerspectiveCamera(
+    55,
+    window.innerWidth / window.innerHeight,
+    0.1,
+    200
+);
+
+camera.position.set(13, 12, 17);
+
+const renderer = new THREE.WebGLRenderer({
+    antialias: true
+});
+
+renderer.setSize(
+    window.innerWidth,
+    window.innerHeight
+);
+
+renderer.setPixelRatio(
+    Math.min(window.devicePixelRatio, 2)
+);
+
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+
+container.appendChild(renderer.domElement);
+
+const controls = new OrbitControls(
+    camera,
+    renderer.domElement
+);
+
+controls.enableDamping = true;
+controls.target.set(0, 1, 0);
+controls.maxPolarAngle = Math.PI / 2.05;
+controls.minDistance = 7;
+controls.maxDistance = 32;
+
+scene.add(new THREE.HemisphereLight(0xc8e3ff, 0x46515c, 2));
+
+const sunlight = new THREE.DirectionalLight(0xffffff, 3);
+sunlight.position.set(10, 18, 10);
+sunlight.castShadow = true;
+scene.add(sunlight);
+
+// Ground
+const ground = new THREE.Mesh(
+    new THREE.PlaneGeometry(50, 50),
+    new THREE.MeshStandardMaterial({
+        color: 0x354653,
+        roughness: 0.95
+    })
+);
+
+ground.rotation.x = -Math.PI / 2;
+ground.position.y = -0.08;
+ground.receiveShadow = true;
+scene.add(ground);
+
+// Project site
+const site = new THREE.Group();
+scene.add(site);
+
+function createBox(
+    width,
+    height,
+    depth,
+    color,
+    x,
+    y,
+    z
+) {
+    const mesh = new THREE.Mesh(
+        new THREE.BoxGeometry(width, height, depth),
+        new THREE.MeshStandardMaterial({
+            color,
+            roughness: 0.75
+        })
+    );
+
+    mesh.position.set(x, y, z);
+    mesh.castShadow = true;
+    mesh.receiveShadow = true;
+
+    site.add(mesh);
+    return mesh;
+}
+
+// Main project building
+createBox(7, 0.35, 6, 0x8c9baa, 0, 0.15, 0);
+
+createBox(6.5, 2.4, 5.5, 0xc5d1da, 0, 1.5, 0);
+
+createBox(6.8, 0.2, 5.8, 0x3478f6, 0, 2.8, 0);
+
+// Windows
+for (let i = -2; i <= 2; i++) {
+    createBox(
+        0.7, 0.85, 0.06,
+        0x55bde8,
+        i * 1.15,
+        1.65,
+        2.78
+    );
+}
+
+// Construction crane
+createBox(0.25, 8, 0.25, 0xf3c34d, -5, 4, -3);
+
+createBox(5.5, 0.22, 0.22, 0xf3c34d, -3, 7.7, -3);
+
+createBox(0.15, 3, 0.15, 0xe7eef7, -1.5, 6.1, -3);
+
+// Storage containers
+createBox(2.2, 1.4, 1.4, 0x4ca783, 5, 0.7, 2.8);
+
+createBox(2.2, 1.4, 1.4, 0xd98b4d, 5, 0.7, 4.5);
+
+// Site road
+createBox(15, 0.03, 2, 0x202c3a, 0, 0, 6);
+
+// Road markings
+for (let i = -6; i <= 6; i += 2) {
+    createBox(0.9, 0.025, 0.07, 0xf6e6a6, i, 0.025, 6);
+}
+
+// Trees around the project
+function createTree(x, z) {
+    const trunk = new THREE.Mesh(
+        new THREE.CylinderGeometry(0.13, 0.18, 1.2, 8),
+        new THREE.MeshStandardMaterial({
+            color: 0x80583a
+        })
+    );
+
+    trunk.position.set(x, 0.6, z);
+    trunk.castShadow = true;
+    site.add(trunk);
+
+    const crown = new THREE.Mesh(
+        new THREE.SphereGeometry(0.7, 12, 10),
+        new THREE.MeshStandardMaterial({
+            color: 0x398465
+        })
+    );
+
+    crown.position.set(x, 1.55, z);
+    crown.castShadow = true;
+    site.add(crown);
+}
+
+createTree(-8, -5);
+createTree(-9, 0);
+createTree(9, -5);
+createTree(9, 0);
+
+// Simulation state
+let budget = 100000;
+let progress = 35;
+
+function updatePanel() {
+    document.getElementById('budget').textContent =
+        budget.toLocaleString() + ' SAR';
+
+    document.getElementById('progress').textContent =
+        progress + '%';
+
+    document.getElementById('status').textContent =
+        progress >= 100 ? 'Completed' :
+        progress >= 60 ? 'On Track' :
+        'In Progress';
+}
+
+window.addResources = function() {
+    if (budget >= 15000) {
+        budget -= 15000;
+        progress = Math.min(progress + 15, 100);
+
+        document.getElementById('message').textContent =
+            'Resources added. Cost increased and project progress improved.';
+
+    } else {
+        document.getElementById('message').textContent =
+            'Insufficient budget for this decision.';
+    }
+
+    updatePanel();
+};
+
+window.resolveDelay = function() {
+    if (budget >= 10000) {
+        budget -= 10000;
+        progress = Math.min(progress + 10, 100);
+
+        document.getElementById('message').textContent =
+            'The delay intervention is complete. Review the updated project indicators.';
+
+    } else {
+        document.getElementById('message').textContent =
+            'Insufficient budget to resolve the delay.';
+    }
+
+    updatePanel();
+};
+
+window.resetProject = function() {
+    budget = 100000;
+    progress = 35;
+
+    document.getElementById('message').textContent =
+        'Simulation reset. You can try different project decisions.';
+
+    updatePanel();
+};
+
+updatePanel();
+
+function animate() {
+    requestAnimationFrame(animate);
+
+    controls.update();
+    renderer.render(scene, camera);
+}
+
+animate();
+
+window.addEventListener('resize', () => {
+    camera.aspect =
+        window.innerWidth / window.innerHeight;
+
+    camera.updateProjectionMatrix();
+
+    renderer.setSize(
+        window.innerWidth,
+        window.innerHeight
+    );
+});
+</script>
+
+</body>
+</html>
