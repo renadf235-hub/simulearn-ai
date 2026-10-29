@@ -1,7 +1,7 @@
 import streamlit as st
 from pypdf import PdfReader
 import re
-
+import streamlit.components.v1 as components
 st.set_page_config(
     page_title="SimuLearn AI",
     page_icon="🎓",
@@ -383,3 +383,49 @@ st.divider()
 st.caption(
     "SimuLearn AI | نموذج أولي أكاديمي متعدد التخصصات"
 )
+# 3D Project Management Simulation
+if page == "إدارة المشاريع ثلاثية الأبعاد":
+
+    st.title("🏗️ محاكاة إدارة المشاريع")
+    st.write(
+        "استكشف بيئة مشروع افتراضي، وغيّر قراراتك "
+        "لملاحظة أثرها على الميزانية والتقدم."
+    )
+
+    try:
+        with open("project_scene.html", "r", encoding="utf-8") as file:
+            project_html = file.read()
+
+        components.html(
+            project_html,
+            height=750,
+            scrolling=False
+        )
+
+    except FileNotFoundError:
+        st.error(
+            "لم يتم العثور على ملف project_scene.html. "
+            "تأكدي من وجوده في المستودع نفسه."
+        )
+        # 3D Project Management Simulation
+if page == "إدارة المشاريع ثلاثية الأبعاد":
+
+    st.title("🏗️ محاكاة إدارة المشاريع")
+
+    st.write(
+        "استكشف موقع مشروع افتراضيًا، "
+        "واتخذ قرارات تؤثر على الميزانية والتقدم."
+    )
+
+    try:
+        with open("project_scene.html", "r", encoding="utf-8") as file:
+            project_html = file.read()
+
+        components.html(
+            project_html,
+            height=750,
+            scrolling=False
+        )
+
+    except FileNotFoundError:
+        st.error("لم يتم العثور على ملف المشروع ثلاثي الأبعاد.")
